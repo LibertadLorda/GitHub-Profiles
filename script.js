@@ -1,5 +1,5 @@
 const main = document.getElementById("main");
-const APIURL = "https://api.github.com/users/";
+//const APIURL = "https://api.github.com/users/";
 
 form.addEventListener('submit', function(e){
     e.preventDefault();
@@ -8,24 +8,29 @@ form.addEventListener('submit', function(e){
     //Sirve para unir las palabras de la busqueda
     let originalName = search.split(' ').join('');
 
-    //alert(originalName);
 
-    fetch(APIURL+originalName)
-        .then((result) => result.json())
-        .then((data) => {
+   axios.get("https://api.github.com/users/"+originalName)
+       /* con FETCH
+       fetch(APIURL+originalName)
+       .then((result) => result.json())
+        .then((data) => { */
+        .then((response) =>{
+            if(response.status === 200){
+            const data = response.data;
             console.log(data);
 
-            if(data.message === "Not Found"){
+          /*  if(data.message === "Not found"){
                 message=document.createElement("h2");
                 message.textContent= "No profile with this username";
                 message.classList.add('user-info');
+
                 profile = document.createElement("div");
                 profile.classList.add('card');
                 profile.appendChild(message);
                 main.appendChild(profile);
             }
             else
-            {
+            {*/
             //Creamos los elementos CSS a partir de los datos de la API
             profile = document.createElement("div");
             profile.classList.add('card');
@@ -36,6 +41,30 @@ form.addEventListener('submit', function(e){
             avatarImg.classList.add('avatar');
             profile.appendChild(avatarImg);
 
+
+            //Accedemos a los datos del enlace de repositorios de la API
+            axios.get(data.repos_url)
+              /* CODIGO SI SE HICIERA CON FETCH
+                const repo= data.repos_url;
+                fetch(repo) 
+               .then((result) => result.json())
+                .then((repoData) =>{*/
+                .then((response) =>{
+                    const repoData = response.data;
+
+                    list=document.createElement("ul");
+                    list.classList.add('user-info');
+                    profile.appendChild(list);
+                    
+
+                    repoData.forEach((repo) => {
+                        listItem=document.createElement("li");
+                        listItem.textContent= repo.name;
+                        listItem.classList.add('repo');
+                        list.appendChild(listItem);   
+                    });                     
+            })
+         
             profileData = document.createElement("div");
             profileData.classList.add('user-info');
             profile.appendChild(profileData);
@@ -51,17 +80,13 @@ form.addEventListener('submit', function(e){
             infoProfile.classList.add('user-info');
             profileData.appendChild(infoProfile);  
 
-
-            //profileData2 = document.createElement("div");
-
             listFollow=document.createElement("ul");
             listFollow.classList.add('user-info');
+            profileData.appendChild(listFollow);
 
             itemFollowers= document.createElement("li");
             itemFollowers.textContent = `${data.followers} Followers`;
             itemFollowers.classList.add('user-info');
-            
-            profileData.appendChild(listFollow);
             listFollow.appendChild(itemFollowers);
 
             itemFollowing=document.createElement("li");
@@ -73,28 +98,20 @@ form.addEventListener('submit', function(e){
             itemRepos.textContent = `${data.public_repos} Repos`;
             itemRepos.classList.add('user-info');
             listFollow.appendChild(itemRepos);
-            profileData.appendChild(listFollow);
+        }})   
 
+        .catch((error) =>{
+            console.log(error);
 
-
-            //Accedemos a los datos del enlace de repositorios de la API
-            const repo= data.repos_url;
-            fetch(repo)
-                .then((result) => result.json())
-                .then((repoData) =>{
-                    const list=document.createElement("ul");
-                    list.classList.add('user-info');
-
-                    repoData.forEach((repo) => {
-                        const listItem=document.createElement("li");
-                        listItem.textContent= repo.name;
-                        listItem.classList.add('repo');
-                        list.appendChild(listItem);   
-                    });
-
-                    profileData.appendChild(list);                   
-            });
-        }})    
+            message=document.createElement("h2");
+            message.classList.add('user-info');
+            message.textContent= "No profile with this username";
+            profile = document.createElement("div");
+            profile.classList.add('card');
+            profile.appendChild(message);
+            main.appendChild(profile);
+            
+        });
 })
     
   
